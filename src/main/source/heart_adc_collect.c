@@ -163,7 +163,7 @@ void heart_adc_set_active(bool active)
 
     if (!g_sample_timer) return;
 
-    /* 修复：切换到前台时，唤醒正在休眠的任务 */
+    /* 切换到前台时，唤醒正在休眠的任务 */
     if (active && adc_task_handle) {
         // xTaskNotifyGive(adc_task_handle);
         xTaskNotify(adc_task_handle, 1, eSetValueWithOverwrite);
@@ -172,18 +172,19 @@ void heart_adc_set_active(bool active)
     if (active) {
         /* 切换到前台：启动高频定时器 5ms */
         esp_timer_stop(g_sample_timer);
-        /* 修复：重置算法状态，立即适应新信号 */
+        /* 重置算法状态，立即适应新信号 */
         heart_adc_reset_algorithm();
 
         esp_err_t err = esp_timer_start_periodic(g_sample_timer, 5000);
         if (err == ESP_OK) {
-            ESP_LOGI(TAG, "Switch to FOREGROUND mode (200Hz)");
+            // ESP_LOGI(TAG, "Switch to FOREGROUND mode (200Hz)");
         }
-    } else {
-        /* 切换到后台：停止高频定时器，任务将进入vTaskDelay休眠 */
-        esp_timer_stop(g_sample_timer);
-        ESP_LOGI(TAG, "Switch to BACKGROUND mode (1min interval)");
-    }
+    } 
+    // else {
+    //     /* 切换到后台：停止高频定时器，任务将进入vTaskDelay休眠 */
+    //     esp_timer_stop(g_sample_timer);
+    //     ESP_LOGI(TAG, "Switch to BACKGROUND mode (1min interval)");
+    // }
 }
 
 static void heart_adc_task(void *pv)
@@ -228,7 +229,7 @@ static void heart_adc_task(void *pv)
             if (!g_adc_active) {
                 heart_adc_reset_algorithm();
 
-                /* 快速初始化包络线（150ms） */
+                /* 初始化心率设置 */
                 for (int i = 0; i < BACKGROUND_INIT_SAMPLES; i++) {
                     int v = adc1_get_raw(HEART_ADC_CHANNEL);
                     if (v < envelope_min) envelope_min = v;
@@ -264,7 +265,7 @@ static void heart_adc_task(void *pv)
             /*==================================================
              * 前台正常模式：200Hz持续采样，等待定时器通知
              *==================================================*/
-            /* 修复：前台模式首次进入时，快速初始化包络线 */
+            /* 前台模式首次进入时，初始化心率设置 */
             if (!foreground_init_done) {
                 foreground_init_done = true;
                 for (int i = 0; i < 30; i++) {
@@ -275,7 +276,7 @@ static void heart_adc_task(void *pv)
                 }
                 baseline = (envelope_min + envelope_max) / 2;
                 prev_smoothed = baseline;
-                ESP_LOGI(TAG, "Foreground init done, baseline=%d", baseline);
+                // ESP_LOGI(TAG, "Foreground init done, baseline=%d", baseline);
             }
 
             ulTaskNotifyTake(pdTRUE, portMAX_DELAY);

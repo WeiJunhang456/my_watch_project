@@ -1,1 +1,1 @@
-src文件夹下是用户编写的程序。components为组件工具，存放lvgl组件
+src文件夹下为个人编写的程序。components为组件工具，存放lvgl组件
