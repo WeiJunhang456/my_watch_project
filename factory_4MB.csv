@@ -1,0 +1,10 @@
+# 4MB Flash Partition Table (Custom)
+# Name,   Type, SubType, Offset,  Size
+# System partition: NVS (WiFi config, parameters), 24KB
+nvs,      data, nvs,     0x9000,  0x6000
+# System partition: PHY init (WiFi/BT calibration), 4KB
+phy_init, data, phy,     0xf000,  0x1000
+# APP partition: Factory (main program), 3MB (0x300000)
+factory,  app,  factory, 0x10000, 0x300000
+# File system: SPIFFS (LVGL fonts, assets), 960KB (remaining space)
+spiffs,   data, spiffs,  0x310000, 0xF0000
